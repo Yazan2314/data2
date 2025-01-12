@@ -13,13 +13,15 @@
 #ifndef PLAINS25WINTER_WET1_H_
 #define PLAINS25WINTER_WET1_H_
 
-#include <bits/shared_ptr_base.h>
 
-#include "HashTable.h"
+
+#include "hashTable.h"
 #include "jockey.h"
 #include "UnionFind.h"
 #include "wet2util.h"
 #include <memory>
+
+#include "record.h"
 
 class Plains {
 private:
@@ -30,6 +32,59 @@ private:
 
     HashTable<std::shared_ptr<jockey>> jockey_table;
     UnionFind* Teams;
+    HashTable<std::shared_ptr<record>> records_table;
+    // HashTable<team*> records_table; // for the function unitedbyrenk to keep time complixity low
+
+    int find_plus_record_team_aux(TreeNode<int,std::shared_ptr<team>>* node , int& count , int& team_id ,int record) {
+        if (node == nullptr) {
+            return -1;
+        }
+        if (find_plus_record_team_aux(node->m_left, count, team_id,record) == -1 && count > 1) {
+            return -1;  // Early exit if more than one horse has no followers
+        }
+
+        auto current = node->data;
+
+        if (current->get_record() == record && current->is_Active() == true) {
+            count++;
+            team_id = current->get_team_id();
+        }
+        if (count > 1) {
+            return -1;  // If more than one horse has no followers, return -1
+        }
+
+        if (find_plus_record_team_aux(node->m_right, count, team_id,record) == -1 && count > 1) {
+            return -1;  // Early exit if more than one horse has no followers
+        }
+
+        return team_id;
+
+
+    }
+
+    int find_plus_record_team(TreeNode<int,std::shared_ptr<team>>* root, int record) {
+        int count = 0;
+        int team_id = -1;
+
+        int result = find_plus_record_team_aux(root, count, team_id ,  record);
+        if (count != 1) {
+            return -1;
+        }
+        return result;
+
+
+    }
+
+    int abs(int x) {
+        if (x < 0) {
+            return -x;
+        }
+        return x;
+    }
+
+
+
+
     
 public:
     // <DO-NOT-MODIFY> {
