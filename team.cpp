@@ -3,8 +3,10 @@
 //
 
 #include "team.h"
-team::team(int teamid): team_id(teamid) , record(0),isActive(true),parent(nullptr),parent_ptr(nullptr) {}
-
+// team::team(int teamid): team_id(teamid) , record(0),   followers(0),  total_jockeys(0)  ,isActive(true),parent(nullptr),parent_ptr(nullptr){}
+team::team(int teamid)
+    : team_id(teamid), record(0), isActive(true), total_jockeys(0),
+      parent(nullptr), parent_ptr(nullptr), followers(0) {}
 
 int team::get_team_id() {
     return team_id;

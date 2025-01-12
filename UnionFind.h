@@ -5,7 +5,7 @@
 #ifndef UNIONFIND_H
 #define UNIONFIND_H
 #include "team.h"
-#include "HashTable.h"
+#include "hashTable.h"
 #include <memory>
 
 class UnionFind
@@ -17,7 +17,7 @@ public:
     UnionFind();
     UnionFind(UnionFind& other);
     ~UnionFind();
-    std::shared_ptr<team> MakeFleets(int id);
+    std::shared_ptr<team> Maketeams(int id);
     void Union(int teamId1, int teamId2);
     std::shared_ptr<team> findRoot(std::shared_ptr<team> team1);
     std::shared_ptr<team> Find(int id);

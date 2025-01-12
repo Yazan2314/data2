@@ -11,7 +11,7 @@ UnionFind::UnionFind(UnionFind &other) = default;
 
 UnionFind::~UnionFind() = default;
 
-std::shared_ptr<team> UnionFind::MakeFleets(int id)
+std::shared_ptr<team> UnionFind::Maketeams(int id)
 {
     if(m_teams.Contained(id))
         return nullptr;
@@ -31,111 +31,116 @@ std::shared_ptr<team> UnionFind::MakeFleets(int id)
 
 void UnionFind::Union(int teamid1, int teamid2){
 
-    std::shared_ptr<team> team1 = m_teams.getObj(teamid1);
-    std::shared_ptr<team> team2 = m_teams.getObj(teamid2);
-    std::shared_ptr<team> fleet1Root = findRoot(team1);
-    std::shared_ptr<team> fleet2Root = findRoot(team2);
-    int team1Size = fleet1Root->get_total_jockeys();
-    int team2Size = fleet2Root->get_total_jockeys();
+    std::shared_ptr<team> team1 = m_teams[teamid1];
+    std::shared_ptr<team> team2 = m_teams[teamid2];
+
+    std::shared_ptr<team> team1Root = Find(teamid1);
+    std::shared_ptr<team> team2Root = Find(teamid2);
+
+    int team1jockey = team1Root->get_total_jockeys();
+    int team2jockey = team2Root->get_total_jockeys();
+    int record_team1 = team1Root->get_record();
+    int record_team2 = team2Root->get_record();
+    int team1Size = team1Root->get_followers();
+    int team2Size = team2Root->get_followers();
 
 
-    if(team1Size > team2Size) {
+    if (team1Size >= team2Size && record_team1 >= record_team2){ // team1 > team2 and in the union is team1
+        team2->change_Active(false);
+        // team2Root->change_parent(team1Root.get());
+
+        team2Root->set_parent(team1Root);
+
+        team1Root->update_record(record_team2);
+        team1Root->update_followers(team2Root->get_followers() +1);
+        team1Root->update_total_jockeys(team2jockey);
+
+
+
+    }else if (team1Size < team2Size && record_team1 >= record_team2) { /// team1 > team2 and in the union is team2
+        team2->change_Active(false);
+        // team1Root->change_parent(team2Root.get());
+
+        team1Root->set_parent(team2Root);
+
+        team2Root->update_record(record_team1);
+        team2Root->update_followers(team1Root->get_followers()+1);
+        team2Root->update_total_jockeys(team1jockey);
+
+    }else if (team1Size >= team2Size && record_team1 < record_team2) {/// team1 < team2 and in the union is team1
+        team1->change_Active(false);
+        // team2Root->change_parent(team1Root.get());
+        team2Root->set_parent(team1Root);
+
+        team1Root->update_record(record_team2);
+        team1Root->update_followers(team2Root->get_followers()+1);
+        team1Root->update_total_jockeys(team2jockey);
+
+
+
+    }else if (team1Size < team2Size && record_team1 < record_team2) {   /// team1 < team2 and in the union is team2
+        team1->change_Active(false);
+        // team1Root->change_parent(team2Root.get());
+
+        team1Root->set_parent(team2Root);
+
+        team2Root->update_record(record_team1);
+        team2Root->update_followers(team1Root->get_followers()+1);
+        team2Root->update_total_jockeys(team1jockey);
 
     }
 
-
-    // int fleet1Pirates = fleet1Root->m_numOfPirates;
-    // int fleet2Pirates = fleet2Root->m_numOfPirates;
-    // if(fleet1Size >= fleet2Size && fleet1Pirates >= fleet2Pirates)
-    // {
-    //     fleet2Root->m_parent = fleet1Root;
-    //     fleet1Root->m_numOfPirates += fleet2Pirates;
-    //     fleet1Root->m_numOfShips += fleet2Size;
-    //     fleet2->m_isActive = false;
-    //     fleet2Root->m_rankExtra += fleet1Pirates;
-    //     fleet2Root->m_rankExtra -= fleet1Root->m_rankExtra;
-    // }
-    // else if( fleet1Size < fleet2Size && fleet1Pirates >= fleet2Pirates)
-    // {
-    //     fleet1Root->m_parent = fleet2Root;
-    //     fleet2Root->m_numOfPirates += fleet1Pirates;
-    //     fleet2Root->m_numOfShips += fleet1Size;
-    //     fleet2->m_isActive = false;
-    //     fleet2Root->m_rankExtra += fleet1Pirates;
-    //     fleet1Root->m_rankExtra -= fleet2Root->m_rankExtra;
-    // }
-    // else if(fleet1Size >= fleet2Size && fleet1Pirates < fleet2Pirates)
-    // {
-    //     fleet2Root->m_parent = fleet1Root;
-    //     fleet1Root->m_numOfPirates += fleet2Pirates;
-    //     fleet1Root->m_numOfShips += fleet2Size;
-    //     fleet1->m_isActive = false;
-    //     fleet1Root->m_rankExtra += fleet2Pirates;
-    //     fleet2Root->m_rankExtra -= fleet1Root->m_rankExtra;
-    // }
-    // else if(fleet1Size < fleet2Size && fleet1Pirates < fleet2Pirates)
-    // {
-    //     fleet1Root->m_parent = fleet2Root;
-    //     fleet2Root->m_numOfPirates += fleet1Pirates;
-    //     fleet2Root->m_numOfShips += fleet1Size;
-    //     fleet1->m_isActive = false;
-    //     fleet1Root->m_rankExtra += fleet2Pirates;
-    //     fleet1Root->m_rankExtra -= fleet2Root->m_rankExtra;
-    //
-    // }
-
 }
 
 
-std::shared_ptr<fleet> UnionFind::findRoot(std::shared_ptr<fleet> fleet1) {
-    if(! fleet1->m_parent.lock())
-        return fleet1;
-    std::weak_ptr<fleet> parent = fleet1->m_parent;
-    return findRoot(parent.lock());
+std::shared_ptr<team> UnionFind::findRoot(std::shared_ptr<team> team1) {
+    if( team1->get_parent_ptr() == nullptr) {
+        return team1;
+    }
+    auto  parent = team1->get_parent_ptr();
+    return findRoot(parent);
 }
 
 
-std::shared_ptr<fleet> UnionFind::Find(int id) {
-    std::shared_ptr<fleet> fleet1 = m_fleets[id];
-    if(fleet1 == nullptr)
+std::shared_ptr<team> UnionFind::Find(int id) {
+    std::shared_ptr<team> team1 = m_teams[id];
+    if(team1 == nullptr)
         return nullptr;
-    std::shared_ptr<fleet> root = findRoot(fleet1);
-    updateExtra(fleet1);
-    pathCompression(fleet1, root);
-    return fleet1;
+    std::shared_ptr<team> root = findRoot(team1);
+    // updateExtra(fleet1); /// todo : i dont know what for mabey we dont need it
+    pathCompression(team1, root);
+    return root;
 }
 
-void UnionFind::pathCompression(std::shared_ptr<fleet> fleet1, std::shared_ptr<fleet> root)
-{
-    std::weak_ptr<fleet> parent = fleet1->m_parent;
-    if(! parent.lock())
+void UnionFind::pathCompression(std::shared_ptr<team> team1, std::shared_ptr<team> root){
+    auto parent = team1->get_parent_ptr();
+    if(parent == nullptr)
         return;
-    fleet1->m_parent = root;
-    pathCompression(parent.lock(),root);
+    team1->change_parent(root.get());
+    pathCompression(parent,root);
 }
 
-void UnionFind::updateExtra(std::shared_ptr<fleet> fleet1)
-{
-    int extra_sum = 0;
-    std::shared_ptr<fleet> tmp = fleet1;
-    while( tmp )
-    {
-        if(! tmp->m_parent.lock())
-            break;
-        extra_sum += tmp->m_rankExtra;
-        tmp = tmp->m_parent.lock();
-    }
-    tmp = fleet1;
-    while( tmp )
-    {
-        int prevRankExtra = tmp->m_rankExtra;
-        if(! tmp->m_parent.lock())
-            break;
-        tmp->m_rankExtra = extra_sum;
-        extra_sum -= prevRankExtra;
-        tmp = tmp->m_parent.lock();
-    }
-}
+// void UnionFind::updateExtra(std::shared_ptr<fleet> fleet1){ /// todo : i dont know this function what for
+//     int extra_sum = 0;
+//     std::shared_ptr<fleet> tmp = fleet1;
+//     while( tmp )
+//     {
+//         if(! tmp->m_parent.lock())
+//             break;
+//         extra_sum += tmp->m_rankExtra;
+//         tmp = tmp->m_parent.lock();
+//     }
+//     tmp = fleet1;
+//     while( tmp )
+//     {
+//         int prevRankExtra = tmp->m_rankExtra;
+//         if(! tmp->m_parent.lock())
+//             break;
+//         tmp->m_rankExtra = extra_sum;
+//         extra_sum -= prevRankExtra;
+//         tmp = tmp->m_parent.lock();
+//     }
+// }
 
 bool UnionFind::Exists(int teamId) {
     if(m_teams.Contained(teamId))
@@ -143,13 +148,13 @@ bool UnionFind::Exists(int teamId) {
     return false;
 }
 
-int UnionFind::calcPirateRank(std::shared_ptr<fleet> fleet1) {
-    std::weak_ptr<fleet> tmp = fleet1;
-    int rank = findRoot(tmp.lock())->m_numOfPirates;
-    while( tmp.lock() )
-    {
-        rank -= tmp.lock()->m_rankExtra;
-        tmp = tmp.lock()->m_parent;
-    }
-    return rank;
-}
+// int UnionFind::calcPirateRank(std::shared_ptr<fleet> fleet1) {
+//     std::weak_ptr<fleet> tmp = fleet1;
+//     int rank = findRoot(tmp.lock())->m_numOfPirates;
+//     while( tmp.lock() )
+//     {
+//         rank -= tmp.lock()->m_rankExtra;
+//         tmp = tmp.lock()->m_parent;
+//     }
+//     return rank;
+// } todo :  i don't know this function what for
