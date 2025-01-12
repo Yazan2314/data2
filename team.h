@@ -14,6 +14,7 @@ class team {
   team* parent;
   std::shared_ptr<team> parent_ptr;
   int followers; /// the number of teams foolow him in the unionfind opiste tree
+  team* record_parent;
 
   public:
 
@@ -31,6 +32,12 @@ class team {
   void update_total_jockeys(int num);
   void update_followers(int num);
   int get_followers() const;
+
+  team* get_record_parent() const;
+  void update_record_parent(team* new_parent);
+
+
+
 
   std::shared_ptr<team> get_parent_ptr() const;
   void set_parent(std::shared_ptr<team> new_parent);

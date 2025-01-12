@@ -6,7 +6,7 @@
 // team::team(int teamid): team_id(teamid) , record(0),   followers(0),  total_jockeys(0)  ,isActive(true),parent(nullptr),parent_ptr(nullptr){}
 team::team(int teamid)
     : team_id(teamid), record(0), isActive(true), total_jockeys(0),
-      parent(nullptr), parent_ptr(nullptr), followers(0) {}
+      parent(nullptr), parent_ptr(nullptr), followers(0) ,record_parent(nullptr){}
 
 int team::get_team_id() {
     return team_id;
@@ -51,6 +51,16 @@ bool team::is_Active() const {
 team *team::get_parent() const {
     return parent;
 }
+
+
+team *team::get_record_parent() const {
+    return record_parent;
+}
+
+void team::update_record_parent(team *new_parent) {
+    record_parent = new_parent;
+}
+
 
 
 

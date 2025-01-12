@@ -151,6 +151,9 @@ StatusType Plains::update_match(int victoriousJockeyId, int losingJockeyId){
 
 StatusType Plains::merge_teams(int teamId1, int teamId2){
     if (teamId1 <= 0 || teamId2 <= 0 || teamId1 == teamId2) {
+        return StatusType::INVALID_INPUT;
+    }
+    if (!Teams->m_teams.Contained(teamId1) || !Teams->m_teams.Contained(teamId2)) {
         return StatusType::FAILURE;
     }
     auto team1 = Teams->m_teams.getObj(teamId1);
@@ -238,7 +241,7 @@ if (record <= 0) {
     //     return StatusType::FAILURE;
     // }
     return merge_teams(team1Id, team2Id);
-
+//
     return StatusType::FAILURE;
 }
 
