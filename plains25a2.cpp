@@ -14,6 +14,7 @@ Plains::Plains(){
 Plains::~Plains()
 {
     delete Teams;
+
 }
 
 StatusType Plains::add_team(int teamId){
@@ -29,16 +30,6 @@ StatusType Plains::add_team(int teamId){
         if (temp == nullptr) {
             return StatusType::FAILURE;
         }
-        // records_table.addobj2(0,teamId,temp,&team::get_record);
-        if (!records_table.Contained(0)) {
-            std::shared_ptr<record> new_record = make_shared<record>(0);
-            records_table.addObj(0,new_record);
-            new_record->add_team(temp);
-        }
-        auto tble_of_record =records_table.getObj(0);
-
-        tble_of_record->add_team(temp);
-
 
     }catch (std::bad_alloc &) {
         return StatusType::ALLOCATION_ERROR;
@@ -111,31 +102,30 @@ StatusType Plains::update_match(int victoriousJockeyId, int losingJockeyId){
     // }
     // recordlose_past->remove_team(losingteam);
 
-
-    if (!records_table.Contained(abs(victoryteam->get_record()))  ) {
-        std::shared_ptr<record> new_record = make_shared<record>(abs(victoryteam->get_record()));
-        records_table.addObj(abs(victoryteam->get_record()),new_record);
-        new_record->add_team(victoryteam);
+    if (victoryteam->get_record() != 0) {
+        if (!records_table.Contained(abs(victoryteam->get_record()))  ) {
+            std::shared_ptr<record> new_record = make_shared<record>(abs(victoryteam->get_record()));
+            records_table.addObj(abs(victoryteam->get_record()),new_record);
+            new_record->add_team(victoryteam);
+        }
+        auto recordwin = records_table.getObj(abs(victoryteam->get_record()) );
+        if (recordwin == nullptr) {
+            return StatusType::FAILURE;
+        }
+        recordwin->add_team(victoryteam);
     }
-    auto recordwin = records_table.getObj(abs(victoryteam->get_record()) );
-    if (recordwin == nullptr) {
-        return StatusType::FAILURE;
+    if (losingteam->get_record() != 0) {
+        if (!records_table.Contained(abs(losingteam->get_record()))) {
+            std::shared_ptr<record> new_record = make_shared<record>(abs(losingteam->get_record()));
+            records_table.addObj(abs(losingteam->get_record()),new_record);
+            new_record->add_team(losingteam);
+        }
+        auto recordlost = records_table.getObj(abs(losingteam->get_record()));
+        if (recordlost == nullptr) {
+            return StatusType::FAILURE;
+        }
+        recordlost->add_team(losingteam);
     }
-    recordwin->add_team(victoryteam);
-
-
-    if (!records_table.Contained(abs(losingteam->get_record()))) {
-        std::shared_ptr<record> new_record = make_shared<record>(abs(losingteam->get_record()));
-        records_table.addObj(abs(losingteam->get_record()),new_record);
-        new_record->add_team(losingteam);
-    }
-    auto recordlost = records_table.getObj(abs(losingteam->get_record()));
-   if (recordlost == nullptr) {
-       return StatusType::FAILURE;
-   }
-    recordlost->add_team(losingteam);
-
-
 
 
 
@@ -186,27 +176,27 @@ StatusType Plains::merge_teams(int teamId1, int teamId2){
     }catch (std::bad_alloc &) {
         return StatusType::ALLOCATION_ERROR;
     }
+    if (team1->get_record() != 0 ) {
+        if (!records_table.Contained(abs(team1->get_record()))) {
+            std::shared_ptr<record> new_record = make_shared<record>(abs(team1->get_record()));
+            records_table.addObj(abs(team1->get_record()),new_record);
+            new_record->add_team(team1);
+        }
 
-    if (!records_table.Contained(abs(team1->get_record()))) {
-        std::shared_ptr<record> new_record = make_shared<record>(abs(team1->get_record()));
-        records_table.addObj(abs(team1->get_record()),new_record);
-        new_record->add_team(team1);
+        auto record1 = records_table.getObj(abs(team1->get_record()));
+
+        record1->add_team(team1);
     }
+    if (team2->get_record() != 0 ) {
+        if (!records_table.Contained(abs(team2->get_record()))) {
+            std::shared_ptr<record> new_record = make_shared<record>(abs(team2->get_record()));
+            records_table.addObj(abs(team2->get_record()),new_record);
+            new_record->add_team(team2);
+        }
+        auto record2 = records_table.getObj(abs(team2->get_record()));
 
-    auto record1 = records_table.getObj(abs(team1->get_record()));
-
-    record1->add_team(team1);
-
-    if (!records_table.Contained(abs(team2->get_record()))) {
-        std::shared_ptr<record> new_record = make_shared<record>(abs(team2->get_record()));
-        records_table.addObj(abs(team2->get_record()),new_record);
-        new_record->add_team(team2);
+        record2->add_team(team2);
     }
-    auto record2 = records_table.getObj(abs(team2->get_record()));
-
-    record2->add_team(team2);
-
-
 
 
 
