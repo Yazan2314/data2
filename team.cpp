@@ -75,6 +75,19 @@ void team::set_parent(std::shared_ptr<team> new_parent) {
 
 
 
+std::shared_ptr<team> team::get_leader() const {
+    return leader.lock();
+}
+void team::set_leader(std::shared_ptr<team> new_leader) {
+    leader = new_leader;
+}
+
+
+
+
+
+
+
 
 
 

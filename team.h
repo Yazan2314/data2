@@ -15,6 +15,7 @@ class team {
   std::shared_ptr<team> parent_ptr;
   int followers; /// the number of teams foolow him in the unionfind opiste tree
   team* record_parent;
+  std::weak_ptr<team> leader;
 
   public:
 
@@ -41,6 +42,10 @@ class team {
 
   std::shared_ptr<team> get_parent_ptr() const;
   void set_parent(std::shared_ptr<team> new_parent);
+
+  std::shared_ptr<team> get_leader() const; // Retrieve the leader of the team
+  void set_leader(std::shared_ptr<team> new_leader); // Set the leader of the tea
+
 
 };
 

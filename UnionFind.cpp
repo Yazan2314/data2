@@ -49,38 +49,96 @@ void UnionFind::Union(int teamid1, int teamid2){
 
     if (team1Size >= team2Size && record_team1 >= record_team2){ // team1 > team2 and in the union is team1
         team2->change_Active(false);
-        // team2Root->change_parent(team1Root.get());
+
 
         team2Root->set_parent(team1Root);
 
 
         team1Root->update_record(record_team2);
-        team1Root->update_followers(team2Root->get_followers() +1);
-        team1Root->update_total_jockeys(team2jockey);
+        team1Root->update_followers(team2Size +1);
+        team1Root->update_total_jockeys(team2jockey); /// todo : no need
+        if (team1Root->get_leader() != nullptr) {
+            team1Root->get_leader()->update_record(record_team2);
+            team1Root->get_leader()->update_followers(team2Size + 1);
+        }
 
 
 
     }else if (team1Size < team2Size && record_team1 >= record_team2) { /// team1 > team2 and in the union is team2
-        team2->change_Active(false);
-        // team1Root->change_parent(team2Root.get());
-
-        // team1Root->set_parent(team2Root);
-        team2Root->set_parent(team1Root);
-
-        team1Root->update_record(record_team2);
-        team2Root->update_followers(team1Root->get_followers()+1);
-        team2Root->update_total_jockeys(team1jockey);
-
-    }else if (team1Size >= team2Size && record_team1 < record_team2) {/// team1 < team2 and in the union is team1
-        team1->change_Active(false);
-        // team2Root->change_parent(team1Root.get());
+        // todo the old
+        // // team2->change_Active(false);
+        // // team1Root->change_parent(team2Root.get());
+        //
+        // // team1Root->set_parent(team2Root);
         // team2Root->set_parent(team1Root);
+        //
+        // team1Root->update_record(record_team2);
+        // team2Root->update_followers(team1Root->get_followers()+1);
+        // team2Root->update_total_jockeys(team1jockey);
+
+        // todo new
+
+        team2->change_Active(false);
         team1Root->set_parent(team2Root);
 
-        team2Root->update_record(record_team1);
-        team1Root->update_followers(team2Root->get_followers()+1);
-        team1Root->update_total_jockeys(team2jockey);
 
+        if (team1Root->get_leader() != nullptr) {
+            team2Root->set_leader(team1Root->get_leader());
+            team1Root->get_leader()->update_record(record_team2);
+            team1Root->get_leader()->update_followers(team2Size + 1);
+            team2Root->update_followers(team1Size + 1);
+            team2Root->update_record(record_team1);
+
+            // team1Root->get_record_parent()->update_followers(team2Root->get_followers() +1);
+            // team1Root->get_record_parent()->update_record(team2Root->get_record());
+            // team2Root->update_followers(temp + 1);
+            // team2Root->update_record(temp2);
+
+
+        }else {
+            team2Root->set_leader(team1Root);
+            team1Root->update_record(record_team2);
+            team1Root->update_followers(team2Size + 1);
+            team2Root->update_followers(team1Size + 1);
+            team2Root->update_record(record_team1);
+
+            // team1Root->update_followers(team2Root->get_followers() +1);
+            // team1Root->update_record(team2Root->get_record() );
+            // team2Root->update_followers(temp + 1);
+            // team2Root->update_record(temp2);
+        }
+
+    }else if (team1Size >= team2Size && record_team1 < record_team2) {/// team1 < team2 and in the union is team1
+
+        ///todo old
+        // team1->change_Active(false);
+        // // team2Root->change_parent(team1Root.get());
+        // // team2Root->set_parent(team1Root);
+        // team1Root->set_parent(team2Root);
+        //
+        // team2Root->update_record(record_team1);
+        // team1Root->update_followers(team2Root->get_followers()+1);
+        // team1Root->update_total_jockeys(team2jockey);
+        //
+
+        // todo new;
+        team1->change_Active(false);
+        team2Root->set_parent(team1Root);
+
+        if (team2Root->get_leader() != nullptr) {
+            team1Root->set_leader(team2Root->get_leader());
+
+            team2Root->get_leader()->update_record(record_team1);
+            team2Root->get_leader()->update_followers(team1Size + 1);
+            team1Root->update_followers(team2Size + 1);
+            team1Root->update_record(record_team2);
+        }else {
+            team1Root->set_leader(team2Root);
+            team2Root->update_record(record_team1);
+            team2Root->update_followers(team1Size + 1);
+            team1Root->update_followers(team2Size + 1);
+            team1Root->update_record(record_team2);
+        }
 
 
     }else if (team1Size < team2Size && record_team1 < record_team2) {   /// team1 < team2 and in the union is team2
@@ -93,6 +151,11 @@ void UnionFind::Union(int teamid1, int teamid2){
         team2Root->update_followers(team1Root->get_followers()+1);
         team2Root->update_total_jockeys(team1jockey);
 
+        if (team2Root->get_leader() != nullptr) {
+            team2Root->get_leader()->update_record(record_team1);
+            team2Root->get_leader()->update_followers(team1Size + 1);
+        }
+
     }
 
 }
@@ -102,9 +165,9 @@ std::shared_ptr<team> UnionFind::findRoot(std::shared_ptr<team> team1) {
     if( team1->get_parent_ptr() == nullptr) {
         return team1;
     }
-    if (team1->is_Active()) {
-        return team1;
-    }
+    // if (team1->is_Active()) {
+    //     return team1;
+    // }
     auto  parent = team1->get_parent_ptr();
     return findRoot(parent);
 }
@@ -115,6 +178,7 @@ std::shared_ptr<team> UnionFind::Find(int id) {
     if(team1 == nullptr)
         return nullptr;
     std::shared_ptr<team> root = findRoot(team1);
+
     // updateExtra(fleet1); /// todo : i dont know what for mabey we dont need it
     pathCompression(team1, root);
     return root;
