@@ -150,14 +150,52 @@ StatusType Plains::update_match(int victoriousJockeyId, int losingJockeyId){
             recordlost->add_team(losingteam->get_leader());
         }
     }
+    ////////////rasha added this //////
+    ////
+    if (victoryteam->get_leader() == nullptr) {
+        if (victoryteam->get_record() -1 != 0) {
+            auto deletionVictory = records_table.getObj(abs(victoryteam->get_record()-1));
+
+            deletionVictory->remove_team(victoryteam);
+            if (deletionVictory->get_teams_tree().m_size == 0 )
+                records_table.deleteObj(abs(victoryteam->get_record()-1),abs(victoryteam->get_record()-1));
+        }
+    }else {
+        if (victoryteam->get_record() -1 != 0) {
+            auto deletionVictory = records_table.getObj(abs(victoryteam->get_record()-1));
+
+            deletionVictory->remove_team(victoryteam->get_leader());
+            if (deletionVictory->get_teams_tree().m_size == 0 )
+                records_table.deleteObj(abs(victoryteam->get_record()-1),abs(victoryteam->get_record()-1));
+        }
+    }
 
 
 
 
-    // records_table.deleteObj(abs(victoryteam->get_record() -1) , victoryteam->get_team_id());
-    // records_table.deleteObj(abs(losingteam->get_record() + 1 ), losingteam->get_team_id());
-    // records_table.addobj2(abs(victoryteam->get_record()) ,victoryteam->get_team_id() , victoryteam,&team::get_record);
-    // records_table.addobj2(abs(losingteam->get_record()),losingteam->get_team_id()  , losingteam,&team::get_record );
+
+
+    if (losingteam->get_leader() == nullptr) {
+        if (losingteam->get_record() + 1 != 0) {
+            auto deletionLosing = records_table.getObj(abs(losingteam->get_record()+1));
+            deletionLosing->remove_team(losingteam);
+            if (deletionLosing->get_teams_tree().m_size == 0 )
+                records_table.deleteObj(abs(losingteam->get_record()+1),abs(losingteam->get_record()+1));
+        }
+    }else {
+        if (losingteam->get_record() + 1 != 0) {
+            auto deletionLosing = records_table.getObj(abs(losingteam->get_record()+1));
+            deletionLosing->remove_team(losingteam->get_leader());
+            if (deletionLosing->get_teams_tree().m_size == 0 )
+                records_table.deleteObj(abs(losingteam->get_record()+1),abs(losingteam->get_record()+1));
+        }
+    }
+    ///////////////////////////////////
+
+
+
+
+
 
 
     return StatusType::SUCCESS;
@@ -178,6 +216,8 @@ StatusType Plains::merge_teams(int teamId1, int teamId2){
     if (!team1->is_Active()||!team2->is_Active()) {
         return StatusType::FAILURE;
     }
+    int oldteam1 = team1->get_record();
+    int oldteam2 = team2->get_record();
 
     ////// todo : test only
     // records_table.deleteObj(abs(team1->get_record())  , teamId1);
@@ -200,6 +240,38 @@ StatusType Plains::merge_teams(int teamId1, int teamId2){
     }catch (std::bad_alloc &) {
         return StatusType::ALLOCATION_ERROR;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+    if (oldteam1 != 0) {
+        auto deletionLosing = records_table.getObj(abs(oldteam1));
+        deletionLosing->remove_team(team1);
+        // if (deletionLosing->get_teams_tree().m_size == 0) {
+        //     records_table.deleteObj(abs(oldteam1),abs(oldteam1));
+        // }
+    }
+    if (oldteam2 != 0) {
+        auto deletionLosing = records_table.getObj(abs(oldteam2));
+        deletionLosing->remove_team(team2);
+        // if (deletionLosing->get_teams_tree().m_size == 0) {
+        //     records_table.deleteObj(abs(oldteam2),abs(oldteam2));
+        // }
+    }
+
+
+
+
+
+
     if (team1->is_Active()) {
         if (team1->get_record() != 0 ) {
             if (!records_table.Contained(abs(team1->get_record()))) {
@@ -225,6 +297,24 @@ StatusType Plains::merge_teams(int teamId1, int teamId2){
             record2->add_team(team2);
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -289,8 +379,12 @@ if (record <= 0) {
 
     auto tree_plus =record_plus->get_teams_tree();
     auto tree_minus =record_minus->get_teams_tree();
+    if (tree_plus.m_size != 2) {
+        return StatusType::FAILURE;
+    }
     int team1Id = find_plus_record_team(tree_plus.m_root,record);
     int team2Id = find_plus_record_team(tree_minus.m_root,-record);
+
     if (team1Id <= 0 || team2Id <= 0) {
         return StatusType::FAILURE;
     }

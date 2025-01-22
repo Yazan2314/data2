@@ -165,9 +165,7 @@ std::shared_ptr<team> UnionFind::findRoot(std::shared_ptr<team> team1) {
     if( team1->get_parent_ptr() == nullptr) {
         return team1;
     }
-    // if (team1->is_Active()) {
-    //     return team1;
-    // }
+
     auto  parent = team1->get_parent_ptr();
     return findRoot(parent);
 }
